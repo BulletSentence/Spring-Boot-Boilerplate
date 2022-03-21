@@ -28,17 +28,17 @@ public class ParkingSpotController {
     }
 
     @PostMapping
-        public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDTO parkingSpotDTO) {
+    public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDTO parkingSpotDTO) {
 
-        if (parkingSpotService.existsByLicensePlateCar(parkingSpotDTO.getLicensePlateCar())){
+        if (parkingSpotService.existsByLicensePlateCar(parkingSpotDTO.getLicensePlateCar())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: License Plate");
         }
 
-        if (parkingSpotService.existsByParkingSpotNumber(parkingSpotDTO.getParkingSpotNumber())){
+        if (parkingSpotService.existsByParkingSpotNumber(parkingSpotDTO.getParkingSpotNumber())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: Parking Number");
         }
 
-        if (parkingSpotService.existsByApartmentAndBlock(parkingSpotDTO.getApartment(), parkingSpotDTO.getBlock())){
+        if (parkingSpotService.existsByApartmentAndBlock(parkingSpotDTO.getApartment(), parkingSpotDTO.getBlock())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: Apartment");
         }
 
@@ -54,22 +54,38 @@ public class ParkingSpotController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id){
+    public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id) {
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
-        if (!parkingSpotModelOptional.isPresent()){
+        if (!parkingSpotModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not Found");
         }
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotModelOptional.get());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteParkingSpot(@PathVariable(value = "id") UUID id){
+    public ResponseEntity<Object> deleteParkingSpot(@PathVariable(value = "id") UUID id) {
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
-        if (!parkingSpotModelOptional.isPresent()){
+        if (!parkingSpotModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not Found");
         }
         parkingSpotService.delete(parkingSpotModelOptional.get());
-        return ResponseEntity.status(HttpStatus.OK).body(parkingSpotModelOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Parking " +
+                parkingSpotModelOptional.get().getParkingSpotNumber() + " Removed!");
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateParkingSpot(
+            @PathVariable(value = "id") UUID id,
+            @RequestBody @Valid ParkingSpotDTO parkingSpotDTO) {
+
+        Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
+        if (!parkingSpotModelOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not Found");
+        }
+        var parkingSpotModel = new ParkingSpotModel();
+        BeanUtils.copyProperties(parkingSpotDTO, parkingSpotModel);
+        parkingSpotModel.setId(parkingSpotModelOptional.get().getId());
+        parkingSpotModel.setRegistrationDate(parkingSpotModelOptional.get().getRegistrationDate());
+        return  ResponseEntity.status(HttpStatus.OK).body(parkingSpotService.save(parkingSpotModel));
+    }
 }

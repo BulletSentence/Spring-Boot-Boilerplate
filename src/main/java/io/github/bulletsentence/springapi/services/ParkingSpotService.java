@@ -2,7 +2,6 @@ package io.github.bulletsentence.springapi.services;
 
 import io.github.bulletsentence.springapi.models.ParkingSpotModel;
 import io.github.bulletsentence.springapi.repositories.ParkingSpotRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -42,5 +41,10 @@ public class ParkingSpotService {
 
     public Optional<ParkingSpotModel> findById(UUID id) {
         return parkingSpotRepository.findById(id);
+    }
+
+    @Transactional
+    public void delete(ParkingSpotModel parkingSpotModel) {
+        parkingSpotRepository.delete(parkingSpotModel);
     }
 }
